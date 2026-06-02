@@ -11,9 +11,18 @@ import uvicorn
 
 app = FastAPI()
 
+# РАЗРЕШАЕМ КОНКРЕТНЫЙ ДОМЕН NETLIFY
+origins = [
+    "https://*.netlify.app",
+    "https://*.netlify.com",
+    "http://localhost:*",
+    "*"  # временно для теста
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -28,38 +37,48 @@ class UserRequest(BaseModel):
 
 @app.post("/chat")
 async def chat(req: UserRequest):
-    response = model.generate_content(req.text)
-    return {"response": response.text}
+    try:
+        response = model.generate_content(req.text)
+        return {"response": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/generate")
 async def generate(req: UserRequest):
-    response = model.generate_content(req.text)
-    content = response.text
+    try:
+        response = model.generate_content(req.text)
+        content = response.text
 
-    if req.file_type == "docx":
-        doc = Document()
-        doc.add_heading("Документ", level=1)
-        for line in content.split('\n'):
-            if line.strip():
-                doc.add_paragraph(line)
-        filename = f"doc_{uuid.uuid4().hex[:8]}.docx"
-        doc.save(filename)
-    else:
-        prs = Presentation()
-        slide = prs.slides.add_slide(prs.slide_layouts[1])
-        slide.shapes.title.text = "Презентация"
-        body = slide.shapes.placeholders[1].text_frame
-        for line in content.split('\n')[:30]:
-            if line.strip():
-                body.add_paragraph(line)
-        filename = f"pres_{uuid.uuid4().hex[:8]}.pptx"
-        prs.save(filename)
-    
-    return FileResponse(filename, filename=filename)
+        if req.file_type == "docx":
+            doc = Document()
+            doc.add_heading("Документ", level=1)
+            for line in content.split('\n'):
+                if line.strip():
+                    doc.add_paragraph(line)
+            filename = f"doc_{uuid.uuid4().hex[:8]}.docx"
+            doc.save(filename)
+        else:
+            prs = Presentation()
+            slide = prs.slides.add_slide(prs.slide_layouts[1])
+            slide.shapes.title.text = "Презентация"
+            body = slide.shapes.placeholders[1].text_frame
+            for line in content.split('\n')[:30]:
+                if line.strip():
+                    body.add_paragraph(line)
+            filename = f"pres_{uuid.uuid4().hex[:8]}.pptx"
+            prs.save(filename)
+        
+        return FileResponse(filename, filename=filename)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
 def root():
     return {"status": "ok"}
+
+@app.options("/{path:full_path}")  # Явно разрешаем OPTIONS запросы
+async def options_handler():
+    return {"message": "OK"}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
