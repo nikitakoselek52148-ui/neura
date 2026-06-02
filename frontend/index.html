@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>NEURA — нейросетевой ассистент</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 50%, #0a0a0a, #030303);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(125deg, #0f0c29, #302b63, #24243e);
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo h2 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(168,85,247,0.3);
+        }
+
+        .chats-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .chat-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .chat-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .chat-item.active {
+            background: rgba(168,85,247,0.2);
+            border: 1px solid rgba(168,85,247,0.3);
+        }
+
+        .chat-item i {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .chat-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .chat-title {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-date {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+
+        .delete-chat {
+            opacity: 0;
+            background: rgba(239,68,68,0.2);
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .chat-item:hover .delete-chat {
+            opacity: 1;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .user-email {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .requests-info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .requests-info i {
+            color: #22c55e;
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239,68,68,0.2);
+            border-color: rgba(239,68,68,0.3);
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .limit-warning {
+            font-size: 12px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: #fbbf24;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: rgba(168,85,247,0.5);
+        }
+
+        .message {
+            display: flex;
+            animation: fadeSlideUp 0.3s ease;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+        }
+
+        .message.user .avatar {
+            order: 2;
+            margin-right: 0;
+            margin-left: 12px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .message-content {
+            max-width: 65%;
+            padding: 14px 20px;
+            border-radius: 24px;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+
+        .user .message-content {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border-bottom-right-radius: 6px;
+        }
+
+        .bot .message-content {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom-left-radius: 6px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 6px;
+            padding: 14px 20px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            animation: typingWave 1.4s infinite;
+        }
+
+        @keyframes typingWave {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+
+        .input-wrapper {
+            padding: 20px 30px 30px;
+        }
+
+        .input-container {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 6px 6px 22px;
+        }
+
+        .input-container:focus-within {
+            border-color: rgba(168,85,247,0.5);
+            box-shadow: 0 0 20px rgba(168,85,247,0.2);
+        }
+
+        .input-container input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 14px 0;
+            font-size: 15px;
+            color: white;
+            outline: none;
+        }
+
+        .input-container input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .input-container button {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Модальное окно */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .auth-card {
+            background: rgba(20,20,30,0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .auth-input:focus {
+            border-color: #a855f7;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .auth-switch {
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(168,85,247,0.2);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                height: 100%;
+                z-index: 15;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .message-content {
+                max-width: 85%;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon"><i class="fas fa-brain"></i></div>
+                    <h2>NEURA</h2>
+                </div>
+                <button class="new-chat-btn" onclick="createNewChat()">
+                    <i class="fas fa-plus"></i> Новый чат
+                </button>
+            </div>
+            <div class="chats-list" id="chatsList"></div>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Загрузка...</div>
+                        <div class="user-email" id="userEmail"></div>
+                    </div>
+                </div>
+                <div class="requests-info" id="requestsInfo">
+                    <i class="fas fa-chart-line"></i>
+                    <span id="requestsCount">Загрузка...</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </div>
+
+        <div class="main-chat">
+            <div class="chat-header">
+                <h3 id="currentChatTitle">Новый чат</h3>
+                <div class="limit-warning" id="limitWarning"></div>
+            </div>
+            <div class="messages" id="messages">
+                <div class="message bot">
+                    <div class="avatar"><i class="fas fa-brain"></i></div>
+                    <div class="message-content">
+                        ✨ <strong>NEURA</strong> — твой нейросетевой ассистент.<br><br>
+                        🧠 Просто спроси — я отвечу<br>
+                        📄 "Сделай документ про..." — создам Word<br>
+                        🎬 "Сделай презентацию про..." — создам PowerPoint<br><br>
+                        ⚡ У вас <strong id="initialLimit">3</strong> запроса в день
+                    </div>
+                </div>
+            </div>
+            <div class="input-wrapper">
+                <div class="input-container">
+                    <input type="text" id="userInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)">
+                    <button onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+        const DAILY_LIMIT = 3;
+        let currentChatId = null;
+        let currentUser = null;
+
+        // ========== АВТОРИЗАЦИЯ ==========
+        
+        function showAuthModal() {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div class="auth-modal" id="authModal">
+                    <div class="auth-card">
+                        <h2><i class="fas fa-brain"></i> NEURA</h2>
+                        <div id="authForm">
+                            <input type="text" id="registerName" class="auth-input" placeholder="Имя">
+                            <input type="email" id="registerEmail" class="auth-input" placeholder="Email">
+                            <input type="password" id="registerPassword" class="auth-input" placeholder="Пароль">
+                            <button class="auth-btn" onclick="register()">Зарегистрироваться</button>
+                            <div class="auth-switch" onclick="switchToLogin()">Уже есть аккаунт? Войти</div>
+                        </div>
+                        <div id="verifyForm" style="display: none;">
+                            <input type="text" id="verifyCode" class="auth-input" placeholder="Введите код из письма">
+                            <input type="hidden" id="verifyEmail">
+                            <button class="auth-btn" onclick="verifyEmail()">Подтвердить</button>
+                            <div class="auth-switch" onclick="resendCode()">Отправить код заново</div>
+                            <div class="auth-switch" onclick="backToRegister()">← Назад</div>
+                        </div>
+                        <div id="messageArea"></div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function switchToLogin() {
+            const formDiv = document.getElementById('authForm');
+            formDiv.innerHTML = `
+                <input type="email" id="loginEmail" class="auth-input" placeholder="Email">
+                <input type="password" id="loginPassword" class="auth-input" placeholder="Пароль">
+                <button class="auth-btn" onclick="login()">Войти</button>
+                <div class="auth-switch" onclick="switchToRegister()">Нет аккаунта? Зарегистрироваться</div>
+            `;
+        }
+
+        function switchToRegister() {
+            const formDiv = document.getElementById('authForm');
+            formDiv.innerHTML = `
+                <input type="text" id="registerName" class="auth-input" placeholder="Имя">
+                <input type="email" id="registerEmail" class="auth-input" placeholder="Email">
+                <input type="password" id="registerPassword" class="auth-input" placeholder="Пароль">
+                <button class="auth-btn" onclick="register()">Зарегистрироваться</button>
+                <div class="auth-switch" onclick="switchToLogin()">Уже есть аккаунт? Войти</div>
+            `;
+            document.getElementById('verifyForm').style.display = 'none';
+            document.getElementById('authForm').style.display = 'block';
+        }
+
+        function backToRegister() {
+            document.getElementById('verifyForm').style.display = 'none';
+            document.getElementById('authForm').style.display = 'block';
+        }
+
+        function showMessage(msg, isError = true) {
+            const msgDiv = document.getElementById('messageArea');
+            msgDiv.innerHTML = `<div class="${isError ? 'error-message' : 'success-message'}" style="color: ${isError ? '#ef4444' : '#22c55e'}">${msg}</div>`;
+            setTimeout(() => msgDiv.innerHTML = '', 5000);
+        }
+
+        async function register() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('verifyEmail').value = email;
+                    document.getElementById('verifyForm').style.display = 'block';
+                    document.getElementById('authForm').style.display = 'none';
+                    showMessage('📧 Код отправлен на почту!', false);
+                } else {
+                    const error = await response.json();
+                    showMessage(error.detail);
+                }
+            } catch (error) {
+                showMessage('Ошибка подключения');
+            }
+        }
+
+        async function verifyEmail() {
+            const email = document.getElementById('verifyEmail').value;
+            const code = document.getElementById('verifyCode').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+                
+                if (response.ok) {
+                    showMessage('✅ Email подтверждён! Теперь войдите.', false);
+                    setTimeout(() => {
+                        document.getElementById('verifyForm').style.display = 'none';
+                        document.getElementById('authForm').style.display = 'block';
+                        switchToLogin();
+                    }, 2000);
+                } else {
+                    const error = await response.json();
+                    showMessage(error.detail);
+                }
+            } catch (error) {
+                showMessage('Ошибка');
+            }
+        }
+
+        async function resendCode() {
+            const email = document.getElementById('verifyEmail').value;
+            try {
+                const response = await fetch(`${API_URL}/resend-code?email=${encodeURIComponent(email)}`, { method: 'POST' });
+                if (response.ok) {
+                    showMessage('Новый код отправлен!', false);
+                } else {
+                    showMessage('Ошибка');
+                }
+            } catch (error) {
+                showMessage('Ошибка');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    localStorage.setItem('neura_user', JSON.stringify(currentUser));
+                    document.getElementById('authModal').remove();
+                    updateUserInfo();
+                    updateRemainingRequests();
+                    loadChats();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.detail);
+                }
+            } catch (error) {
+                showMessage('Ошибка подключения');
+            }
+        }
+
+        async function updateRemainingRequests() {
+            if (!currentUser) return;
+            try {
+                const response = await fetch(`${API_URL}/user/remaining?user_id=${currentUser.id}&email=${currentUser.email}`);
+                const data = await response.json();
+                const remaining = data.remaining;
+                
+                let text = '';
+                if (remaining === "безлимит") {
+                    text = '♾️ Безлимит (Админ)';
+                    document.getElementById('limitWarning').innerHTML = '👑 Админ — безлимит';
+                } else {
+                    text = `📊 Осталось запросов: ${remaining}/${DAILY_LIMIT}`;
+                    if (remaining === 0) {
+                        document.getElementById('limitWarning').innerHTML = '⚠️ Лимит исчерпан на сегодня';
+                        document.getElementById('limitWarning').style.color = '#ef4444';
+                    } else {
+                        document.getElementById('limitWarning').innerHTML = `⚡ Осталось ${remaining} запросов`;
+                        document.getElementById('limitWarning').style.color = '#fbbf24';
+                    }
+                }
+                document.getElementById('requestsCount').innerHTML = text;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userName').innerHTML = currentUser.name + (currentUser.is_admin ? ' <span class="admin-badge">Admin</span>' : '');
+                document.getElementById('userEmail').textContent = currentUser.email;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('neura_user');
+            currentUser = null;
+            currentChatId = null;
+            location.reload();
+        }
+
+        // ========== ЧАТЫ ==========
+
+        async function loadChats() {
+            try {
+                const response = await fetch(`${API_URL}/chats?user_id=${currentUser.id}`);
+                const chats = await response.json();
+                renderChats(chats);
+                if (chats.length > 0 && !currentChatId) {
+                    loadChat(chats[0].id);
+                } else if (chats.length === 0) {
+                    createNewChat();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function renderChats(chats) {
+            const container = document.getElementById('chatsList');
+            container.innerHTML = chats.map(chat => `
+                <div class="chat-item ${currentChatId === chat.id ? 'active' : ''}" onclick="loadChat('${chat.id}')">
+                    <i class="fas fa-comment"></i>
+                    <div class="chat-info">
+                        <div class="chat-title">${escapeHtml(chat.title)}</div>
+                        <div class="chat-date">${new Date(chat.updated_at).toLocaleString()}</div>
+                    </div>
+                    <button class="delete-chat" onclick="event.stopPropagation(); deleteChat('${chat.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function createNewChat() {
+            try {
+                const response = await fetch(`${API_URL}/chats`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUser.id, title: 'Новый чат' })
+                });
+                const chat = await response.json();
+                currentChatId = chat.id;
+                loadChats();
+                document.getElementById('messages').innerHTML = '<div class="message bot"><div class="avatar"><i class="fas fa-brain"></i></div><div class="message-content">Новый чат! Чем могу помочь?</div></div>';
+                document.getElementById('currentChatTitle').textContent = 'Новый чат';
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function loadChat(chatId) {
+            currentChatId = chatId;
+            try {
+                const response = await fetch(`${API_URL}/chats/${chatId}/messages`);
+                const messages = await response.json();
+                renderMessages(messages);
+                const chatInfo = await fetch(`${API_URL}/chats/${chatId}`).then(r => r.json());
+                document.getElementById('currentChatTitle').textContent = chatInfo.title;
+                loadChats();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('messages');
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="message bot"><div class="avatar"><i class="fas fa-brain"></i></div><div class="message-content">Чат пуст. Напишите что-нибудь!</div></div>';
+                return;
+            }
+            container.innerHTML = messages.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="avatar"><i class="fas ${msg.role === 'user' ? 'fa-user' : 'fa-brain'}"></i></div>
+                    <div class="message-content">${escapeHtml(msg.content).replace(/\n/g, '<br>')}</div>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function deleteChat(chatId) {
+            if (confirm('Удалить чат?')) {
+                await fetch(`${API_URL}/chats/${chatId}`, { method: 'DELETE' });
+                if (currentChatId === chatId) {
+                    currentChatId = null;
+                    document.getElementById('messages').innerHTML = '<div class="message bot"><div class="avatar"><i class="fas fa-brain"></i></div><div class="message-content">Чат удалён. Создайте новый.</div></div>';
+                    document.getElementById('currentChatTitle').textContent = 'Новый чат';
+                }
+                loadChats();
+            }
+        }
+
+        // ========== ОТПРАВКА ==========
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text || !currentChatId) return;
+            
+            addMessageToUI(text, 'user');
+            input.value = '';
+            
+            await fetch(`${API_URL}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: currentChatId, role: 'user', content: text })
+            });
+            
+            const lowerText = text.toLowerCase();
+            const wantsDoc = /(сделай|создай|сформируй|напиши|сгенерируй).*(документ|ворд|docx|word)/i.test(lowerText);
+            const wantsPPT = /(сделай|создай|сформируй|сгенерируй).*(презентацию|преза|pptx|powerpoint|слайды)/i.test(lowerText);
+            
+            showTyping();
+            
+            try {
+                let responseText = '';
+                let fileUrl = null;
+                let filename = null;
+                
+                if (wantsDoc || wantsPPT) {
+                    const fileType = wantsDoc ? 'docx' : 'pptx';
+                    const response = await fetch(`${API_URL}/generate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: text, file_type: fileType, user_id: currentUser.id, user_email: currentUser.email })
+                    });
+                    
+                    if (response.status === 429) {
+                        const error = await response.json();
+                        responseText = `❌ ${error.detail}`;
+                    } else if (response.ok) {
+                        const blob = await response.blob();
+                        fileUrl = URL.createObjectURL(blob);
+                        filename = `${fileType}_${Date.now()}.${fileType}`;
+                        responseText = `✅ Я создал ${fileType === 'docx' ? 'документ Word' : 'презентацию PowerPoint'}!`;
+                    } else {
+                        responseText = '❌ Ошибка создания файла';
+                    }
+                } else {
+                    const response = await fetch(`${API_URL}/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: text, user_id: currentUser.id, user_email: currentUser.email })
+                    });
+                    
+                    if (response.status === 429) {
+                        const error = await response.json();
+                        responseText = `❌ ${error.detail}`;
+                    } else {
+                        const data = await response.json();
+                        responseText = data.response;
+                    }
+                }
+                
+                hideTyping();
+                
+                if (fileUrl) {
+                    addMessageWithDownload(responseText, fileUrl, filename);
+                } else {
+                    addMessageToUI(responseText, 'bot');
+                }
+                
+                await fetch(`${API_URL}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: currentChatId, role: 'bot', content: responseText })
+                });
+                
+                const messagesCount = document.querySelectorAll('.message').length;
+                if (messagesCount <= 2) {
+                    const newTitle = text.slice(0, 30) + (text.length > 30 ? '...' : '');
+                    await fetch(`${API_URL}/chats/${currentChatId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: newTitle })
+                    });
+                    document.getElementById('currentChatTitle').textContent = newTitle;
+                    loadChats();
+                }
+                
+                await updateRemainingRequests();
+                
+            } catch (error) {
+                hideTyping();
+                addMessageToUI('❌ Ошибка: ' + error.message, 'bot');
+            }
+        }
+
+        function addMessageToUI(text, role) {
+            const container = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            messageDiv.innerHTML = `
+                <div class="avatar"><i class="fas ${role === 'user' ? 'fa-user' : 'fa-brain'}"></i></div>
+                <div class="message-content">${escapeHtml(text).replace(/\n/g, '<br>')}</div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addMessageWithDownload(text, url, filename) {
+            const container = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = `
+                <div class="avatar"><i class="fas fa-brain"></i></div>
+                <div class="message-content">
+                    ${escapeHtml(text)}
+                    <button class="download-btn" onclick="downloadFile('${url}', '${filename}')">
+                        <i class="fas fa-download"></i> Скачать файл
+                    </button>
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function downloadFile(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function showTyping() {
+            const container = document.getElementById('messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="avatar"><i class="fas fa-brain"></i></div>
+                <div class="message-content"><div class="typing-indicator"><span></span><span></span><span></span></div></div>
+            `;
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Инициализация
+        const savedUser = localStorage.getItem('neura_user');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            updateUserInfo();
+            updateRemainingRequests();
+            loadChats();
+        } else {
+            showAuthModal();
+        }
+    </script>
+</body>
+</html>
