@@ -18,10 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Google Gemini (бесплатно!)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise Exception("GEMINI_API_KEY не задан")
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
