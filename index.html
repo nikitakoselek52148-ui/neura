@@ -1,36 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>NEURA тест</title>
+    <title>NEURA</title>
     <meta charset="UTF-8">
 </head>
 <body>
-    <h1>NEURA - тест</h1>
-    <input type="text" id="input" placeholder="Напиши что-нибудь" style="width: 300px; padding: 10px;">
+    <h1>NEURA</h1>
+    <input type="text" id="input" style="width: 300px; padding: 10px;">
     <button onclick="send()">Отправить</button>
-    <div id="result" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
+    <div id="result"></div>
 
     <script>
-        const API_URL = "https://neura-production-ad43.up.railway.app";
-
         async function send() {
             const input = document.getElementById('input');
             const text = input.value;
-            const resultDiv = document.getElementById('result');
+            const result = document.getElementById('result');
             
-            resultDiv.innerHTML = "Отправляю...";
+            result.innerHTML = 'Отправка...';
+            
+            // Жестко прописанный URL
+            const url = 'https://neura-production-ad43.up.railway.app/chat';
             
             try {
-                const response = await fetch(`${API_URL}/chat`, {
+                const response = await fetch(url, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify({ text: text })
                 });
                 
                 const data = await response.json();
-                resultDiv.innerHTML = "Ответ: " + data.response;
-            } catch (error) {
-                resultDiv.innerHTML = "Ошибка: " + error.message;
+                result.innerHTML = 'Ответ: ' + data.response;
+            } catch (e) {
+                result.innerHTML = 'Ошибка: ' + e.message;
             }
         }
     </script>
