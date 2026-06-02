@@ -11,17 +11,9 @@ import uvicorn
 
 app = FastAPI()
 
-# РАЗРЕШАЕМ КОНКРЕТНЫЙ ДОМЕН NETLIFY
-origins = [
-    "https://*.netlify.app",
-    "https://*.netlify.com",
-    "http://localhost:*",
-    "*"  # временно для теста
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -75,10 +67,6 @@ async def generate(req: UserRequest):
 @app.get("/")
 def root():
     return {"status": "ok"}
-
-@app.options("/{path:full_path}")  # Явно разрешаем OPTIONS запросы
-async def options_handler():
-    return {"message": "OK"}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
