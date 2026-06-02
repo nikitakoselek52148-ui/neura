@@ -22,8 +22,11 @@ app.add_middleware(
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 
-# ПРАВИЛЬНОЕ название модели
-model = genai.GenerativeModel("gemini-1.5-pro")
+# Правильные модели Gemini
+# Попробуй одну из этих:
+MODEL_NAME = "gemini-pro"  # или "models/gemini-pro", или "gemini-1.0-pro"
+
+model = genai.GenerativeModel(MODEL_NAME)
 
 class UserRequest(BaseModel):
     text: str
@@ -35,6 +38,7 @@ async def chat(req: UserRequest):
         response = model.generate_content(req.text)
         return {"response": response.text}
     except Exception as e:
+        print(f"Ошибка чата: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/generate")
@@ -64,6 +68,7 @@ async def generate(req: UserRequest):
         
         return FileResponse(filename, filename=filename)
     except Exception as e:
+        print(f"Ошибка генерации: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
